@@ -29,8 +29,10 @@ public class Apple {
     public void setPosition(int x, int y) {
         if (!pos) {
             Random random = new Random();
-            int posx = random.nextInt(x-10) + 1;
-            int posy = random.nextInt(y-10) + 1;
+            int posx ;
+            int posy ;
+            posx = random.nextInt(x) + 5;
+            posy = random.nextInt(y) + 5;
             position = new Position(posx, posy);
             pos= true;
         }
