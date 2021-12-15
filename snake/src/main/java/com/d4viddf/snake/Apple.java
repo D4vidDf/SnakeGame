@@ -2,7 +2,6 @@ package com.d4viddf.snake;
 
 import android.graphics.Color;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class Apple {
@@ -30,10 +29,10 @@ public class Apple {
     public void setPosition(int x, int y) {
         if (!pos) {
             Random random = new Random();
-            int px = x-10;
-            int py = y-10;
-            int posx = random.nextInt(px) + 5;
-            int posy = random.nextInt(py) + 5;
+            int posx ;
+            int posy ;
+            posx = random.nextInt(x) + 5;
+            posy = random.nextInt(y) + 5;
             position = new Position(posx, posy);
             pos= true;
         }

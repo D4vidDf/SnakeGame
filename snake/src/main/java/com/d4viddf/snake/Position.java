@@ -11,6 +11,11 @@ public class Position {
         PosY = posY;
     }
 
+    public Position(Position position) {
+        this.PosX = position.getPosX();
+        this.PosY = position.getPosY();
+    }
+
     public int getPosX() {
         return PosX;
     }

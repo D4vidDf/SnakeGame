@@ -9,7 +9,9 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.icu.text.Transliterator;
+import android.media.MediaPlayer;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -36,7 +38,7 @@ public class SnakeEngine extends SurfaceView implements
     int numBlocksHigh;
     private Snake snake;
     private Apple apple;
-    private boolean isPlaying;
+    private boolean isPlaying, dead = false, onpause;
 
     public SnakeEngine(MainActivity mainActivity, Point
             size) {
@@ -52,6 +54,7 @@ public class SnakeEngine extends SurfaceView implements
         draw();
         apple = new Apple();
 
+
     }
 
     @Override
@@ -63,9 +66,40 @@ public class SnakeEngine extends SurfaceView implements
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            update();
-            draw();
+            if (onpause) {
+                if (surfaceHolder.getSurface().isValid()) {
+                    canvas = surfaceHolder.lockCanvas();
+                    canvas.drawColor(Color.argb(255, 10, 60, 100));
+                    paint.setColor(Color.WHITE);
+                    paint.setTextSize(80);
+                    paint.setFakeBoldText(true);
+                    canvas.drawText("EN PAUSA", screenX / 4, screenY / 3 + screenY / 10, paint);
+                    paint.setColor(Color.WHITE);
+                    paint.setTextSize(45);
+                    paint.setFakeBoldText(true);
+                    canvas.drawText("Pulsa para reanudar partida", screenX / 7, screenY / 2, paint);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+            } else {
+                if (!dead) {
+                    update();
+                    draw();
+                } else {
+                    canvas = surfaceHolder.lockCanvas();
+                    canvas.drawColor(Color.argb(255, 10, 60, 100));
+                    paint.setColor(Color.WHITE);
+                    paint.setTextSize(80);
+                    paint.setFakeBoldText(true);
+                    canvas.drawText("GAME OVER", screenX / 4, screenY / 3 + screenY / 10, paint);
+                    paint.setColor(Color.WHITE);
+                    paint.setTextSize(45);
+                    paint.setFakeBoldText(true);
+                    canvas.drawText("Pulsa para empezar nueva partida", screenX / 7, screenY / 2, paint);
+                    surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+            }
         }
+
     }
 
     public void pause() {
@@ -75,10 +109,13 @@ public class SnakeEngine extends SurfaceView implements
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+
     }
 
     public void resume() {
         isPlaying = true;
+        onpause = true;
         thread = new Thread(this);
         thread.start();
     }
@@ -92,9 +129,9 @@ public class SnakeEngine extends SurfaceView implements
 
     public void spawnApple() {
         apple.setPosition(NUM_BLOCKS_WIDE - 10, numBlocksHigh - 10);
-        Bitmap appleImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.manzana);
-        Bitmap appImg = Bitmap.createScaledBitmap(appleImg, blockSize * 2, blockSize * 2, false);
-        canvas.drawBitmap(appImg, (apple.getPosition().getPosX() * blockSize) - (blockSize / 2), (apple.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+        Bitmap appleImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
+        Bitmap appImg = Bitmap.createScaledBitmap(appleImg, blockSize + 16, blockSize + 16, false);
+        canvas.drawBitmap(appImg, (apple.getPosition().getPosX() * blockSize) - (blockSize / 3), (apple.getPosition().getPosY() * blockSize) - (blockSize / 3), paint);
     }
 
     private void eatApple() {
@@ -117,6 +154,14 @@ public class SnakeEngine extends SurfaceView implements
 
 
     private boolean isSnakeDeath() {
+        for (BodyPart bodyPart : snake.cuerpo) {
+            if (bodyPart.getPosition().getPosX() == snake.getPosition().getPosX()
+                    && bodyPart.getPosition().getPosY() == snake.getPosition().getPosY()) {
+                dead = true;
+                return true;
+            }
+        }
+        dead = false;
         return false;
     }
 
@@ -127,6 +172,8 @@ public class SnakeEngine extends SurfaceView implements
     public void update() {
         getOrientation();
         isScreenBorder();
+
+        isSnakeDeath();
         eatApple();
     }
 
@@ -184,23 +231,21 @@ public class SnakeEngine extends SurfaceView implements
 
             for (BodyPart snake1 : snake.cuerpo) {
 
-                paint.setColor(Color.argb(255,118,140,48));
+                paint.setColor(Color.argb(255, 118, 140, 48));
                 canvas.drawRect(snake1.getPosition().getPosX() * blockSize, (snake1.getPosition().getPosY() * blockSize), (snake1.getPosition().getPosX() * blockSize) + blockSize, (snake1.getPosition().getPosY() * blockSize) + blockSize, paint);
 
             }
 
             Bitmap snakeHead = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_head);
             Bitmap snakeHeadSized = Bitmap.createScaledBitmap(snakeHead, blockSize * 2, blockSize * 2, false);
-            if (snake.getOrienteton() == 2){
-                canvas.drawBitmap(rotateBitmap(snakeHeadSized,0), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-            }
-            else if (snake.getOrienteton() == 3){
-                canvas.drawBitmap(rotateBitmap(snakeHeadSized,90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-            }
-            else if (snake.getOrienteton() == 0){
-                canvas.drawBitmap(rotateBitmap(snakeHeadSized,180), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-            } else if (snake.getOrienteton() == 1){
-                canvas.drawBitmap(rotateBitmap(snakeHeadSized,-90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+            if (snake.getOrienteton() == 2) {
+                canvas.drawBitmap(rotateBitmap(snakeHeadSized, 0), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+            } else if (snake.getOrienteton() == 3) {
+                canvas.drawBitmap(rotateBitmap(snakeHeadSized, 90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+            } else if (snake.getOrienteton() == 0) {
+                canvas.drawBitmap(rotateBitmap(snakeHeadSized, 180), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+            } else if (snake.getOrienteton() == 1) {
+                canvas.drawBitmap(rotateBitmap(snakeHeadSized, -90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
             }
             /*paint.setColor(snake.getColor());
             canvas.drawRect(snake.getPosition().getPosX() * blockSize, (snake.getPosition().getPosY() * blockSize), (snake.getPosition().getPosX() * blockSize) + blockSize, (snake.getPosition().getPosY() * blockSize) + blockSize, paint);
@@ -226,7 +271,17 @@ public class SnakeEngine extends SurfaceView implements
 
         switch (action) {
 
+
             case MotionEvent.ACTION_DOWN:
+                if (dead) {
+                    newGame();
+                    dead = false;
+                }
+                if (onpause) {
+                    isPlaying = false;
+
+                }
+
                 firstX_point = event.getRawX();
                 firstY_point = event.getRawY();
 
