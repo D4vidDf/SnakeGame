@@ -18,15 +18,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mp = MediaPlayer.create(this,R.raw.background_sound);
-        mp.start();
+        mp = MediaPlayer.create(this,R.raw.retrobit);
         mp.setLooping(true);
         View view = new View(this);
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        snakeEngine = new SnakeEngine(this, size);
+        snakeEngine = new SnakeEngine(this, size,mp);
+
         setContentView(snakeEngine);
+
 
     }
 
@@ -34,19 +35,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         snakeEngine.resume();
-        mp.start();
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         snakeEngine.pause();
-        mp.pause();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mp.pause();
     }
 }

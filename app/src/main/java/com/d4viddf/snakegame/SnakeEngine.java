@@ -26,6 +26,7 @@ import java.util.Random;
 public class SnakeEngine extends SurfaceView implements
         Runnable {
 
+    public MediaPlayer mp;
     private Thread thread = null;
     private Context context;
     private int screenX;
@@ -33,17 +34,28 @@ public class SnakeEngine extends SurfaceView implements
     private int blockSize;
     private Canvas canvas;
     private SurfaceHolder surfaceHolder;
-    private int NUM_BLOCKS_WIDE = 30;
+    private int NUM_BLOCKS_WIDE = 25;
     private Paint paint;
     int numBlocksHigh;
     private Snake snake;
     private Apple apple;
-    private boolean isPlaying, dead = false, onpause;
+    private boolean isPlaying, dead = false, onpause = false, inicio = true, intro = true;
+    private String score, resume, control, desc_control, strat, new_game, resume_desc;
 
     public SnakeEngine(MainActivity mainActivity, Point
-            size) {
+            size, MediaPlayer mediaPlayer) {
         super(mainActivity);
+        this.mp = mediaPlayer;
         context = mainActivity;
+
+        score = (String) context.getResources().getText(R.string.point);
+        resume = (String) context.getResources().getText(R.string.resume);
+        resume_desc = (String) context.getResources().getText(R.string.resume_desc);
+        new_game = (String) context.getResources().getText(R.string.new_game);
+        strat = (String) context.getResources().getText(R.string.strat);
+        control = (String) context.getResources().getText(R.string.control);
+        desc_control = (String) context.getResources().getText(R.string.desc_control);
+
         screenX = size.x;
         screenY = size.y;
         blockSize = screenX / NUM_BLOCKS_WIDE;
@@ -54,68 +66,148 @@ public class SnakeEngine extends SurfaceView implements
         draw();
         apple = new Apple();
 
-
     }
+
 
     @Override
     public void run() {
         while (isPlaying) {
             //va muy rapido, no es jugable
             try {
-                thread.sleep(70);
+                thread.sleep(30);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (onpause) {
-                if (surfaceHolder.getSurface().isValid()) {
-                    canvas = surfaceHolder.lockCanvas();
-                    canvas.drawColor(Color.argb(255, 10, 60, 100));
-                    paint.setColor(Color.WHITE);
-                    paint.setTextSize(80);
-                    paint.setFakeBoldText(true);
-                    canvas.drawText("EN PAUSA", screenX / 4, screenY / 3 + screenY / 10, paint);
-                    paint.setColor(Color.WHITE);
-                    paint.setTextSize(45);
-                    paint.setFakeBoldText(true);
-                    canvas.drawText("Pulsa para reanudar partida", screenX / 7, screenY / 2, paint);
-                    surfaceHolder.unlockCanvasAndPost(canvas);
-                }
+            if (inicio) {
+                welcome();
+            } else if (intro){
+                introShow();
+            }
+            else if (onpause) {
+                pauseMenu();
             } else {
                 if (!dead) {
                     update();
                     draw();
+                    if (!mp.isPlaying()) mp.start();
                 } else {
-                    canvas = surfaceHolder.lockCanvas();
-                    canvas.drawColor(Color.argb(255, 10, 60, 100));
-                    paint.setColor(Color.WHITE);
-                    paint.setTextSize(80);
-                    paint.setFakeBoldText(true);
-                    canvas.drawText("GAME OVER", screenX / 4, screenY / 3 + screenY / 10, paint);
-                    paint.setColor(Color.WHITE);
-                    paint.setTextSize(45);
-                    paint.setFakeBoldText(true);
-                    canvas.drawText("Pulsa para empezar nueva partida", screenX / 7, screenY / 2, paint);
-                    surfaceHolder.unlockCanvasAndPost(canvas);
+                    endgame();
                 }
             }
+
         }
 
     }
 
+    private void introShow() {
+        if (surfaceHolder.getSurface().isValid()) {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.argb(255, 10, 60, 100));
+            Paint textPaint = new Paint();
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(100);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(control, screenX / 2, screenY / 2, textPaint);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(45);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(desc_control, screenX / 2, screenY / 2 + screenY / 8, textPaint);
+            Paint img = new Paint();
+            img.setTextAlign(Paint.Align.CENTER);
+            Bitmap logo = BitmapFactory.decodeResource(context.getResources(), R.drawable.swipe);
+            Bitmap logoSized = Bitmap.createScaledBitmap(logo, blockSize * 10, blockSize * 10, false);
+            canvas.drawBitmap(logoSized, screenX / 4+ screenX/14, screenY / 6, img);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private void welcome() {
+        if (surfaceHolder.getSurface().isValid()) {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.argb(255, 10, 60, 100));
+            Paint textPaint = new Paint();
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(100);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText("S   N   A   K  " +
+                    " E", screenX / 2, screenY / 2, textPaint);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(45);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(strat, screenX / 2, screenY / 2 + screenY / 3, textPaint);
+            Paint img = new Paint();
+            img.setTextAlign(Paint.Align.CENTER);
+            Bitmap logo = BitmapFactory.decodeResource(context.getResources(), R.drawable.logo);
+            Bitmap logoSized = Bitmap.createScaledBitmap(logo, blockSize * 20, blockSize * 20, false);
+            canvas.drawBitmap(logoSized, screenX / 8, screenY / 9, img);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private void endgame() {
+        if (surfaceHolder.getSurface().isValid()) {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.argb(255, 10, 60, 100));
+            Paint textPaint = new Paint();
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(80);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText("G A M E  O V E R", screenX / 2, screenY / 2, textPaint);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(45);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(new_game, screenX / 2, screenY / 2 + screenY / 3, textPaint);
+            Paint img = new Paint();
+            img.setTextAlign(Paint.Align.CENTER);
+            Bitmap logo = BitmapFactory.decodeResource(context.getResources(), R.drawable.skull);
+            Bitmap logoSized = Bitmap.createScaledBitmap(logo, blockSize * 10, blockSize * 10, false);
+            canvas.drawBitmap(logoSized, screenX / 4+ screenX/14, screenY / 6, img);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
+
+    private void pauseMenu() {
+        if (surfaceHolder.getSurface().isValid()) {
+            canvas = surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.argb(255, 10, 60, 100));
+            Paint textPaint = new Paint();
+            textPaint.setTextAlign(Paint.Align.CENTER);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(80);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(resume, screenX / 2, screenY / 2, textPaint);
+            textPaint.setColor(Color.WHITE);
+            textPaint.setTextSize(45);
+            textPaint.setFakeBoldText(true);
+            canvas.drawText(resume_desc, screenX / 2, screenY / 2 + screenY / 3, textPaint);
+            Paint img = new Paint();
+            img.setTextAlign(Paint.Align.CENTER);
+            Bitmap logo = BitmapFactory.decodeResource(context.getResources(), R.drawable.gamepad);
+            Bitmap logoSized = Bitmap.createScaledBitmap(logo, blockSize * 10, blockSize * 10, false);
+            canvas.drawBitmap(logoSized, screenX / 4+ screenX/14, screenY / 6, img);
+            surfaceHolder.unlockCanvasAndPost(canvas);
+        }
+    }
+
     public void pause() {
+
         isPlaying = false;
         try {
             thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
+        mp.pause();
+        pauseMenu();
+        onpause = true;
 
     }
 
     public void resume() {
         isPlaying = true;
-        onpause = true;
         thread = new Thread(this);
         thread.start();
     }
@@ -123,6 +215,7 @@ public class SnakeEngine extends SurfaceView implements
     public void newGame() {
         Position pos = new Position(NUM_BLOCKS_WIDE / 2, numBlocksHigh / 2);
         snake = new Snake(pos);
+        onpause = false;
         draw();
 
     }
@@ -130,7 +223,7 @@ public class SnakeEngine extends SurfaceView implements
     public void spawnApple() {
         apple.setPosition(NUM_BLOCKS_WIDE - 10, numBlocksHigh - 10);
         Bitmap appleImg = BitmapFactory.decodeResource(context.getResources(), R.drawable.apple);
-        Bitmap appImg = Bitmap.createScaledBitmap(appleImg, blockSize + 16, blockSize + 16, false);
+        Bitmap appImg = Bitmap.createScaledBitmap(appleImg, blockSize + 12, blockSize + 12, false);
         canvas.drawBitmap(appImg, (apple.getPosition().getPosX() * blockSize) - (blockSize / 3), (apple.getPosition().getPosY() * blockSize) - (blockSize / 3), paint);
     }
 
@@ -152,12 +245,12 @@ public class SnakeEngine extends SurfaceView implements
 
     }
 
-
     private boolean isSnakeDeath() {
         for (BodyPart bodyPart : snake.cuerpo) {
             if (bodyPart.getPosition().getPosX() == snake.getPosition().getPosX()
                     && bodyPart.getPosition().getPosY() == snake.getPosition().getPosY()) {
                 dead = true;
+                mp.pause();
                 return true;
             }
         }
@@ -172,7 +265,6 @@ public class SnakeEngine extends SurfaceView implements
     public void update() {
         getOrientation();
         isScreenBorder();
-
         isSnakeDeath();
         eatApple();
     }
@@ -209,7 +301,6 @@ public class SnakeEngine extends SurfaceView implements
         }
     }
 
-
     private void isScreenBorder() {
         if (snake.getPosition().getPosX() >= NUM_BLOCKS_WIDE) {
             snake.setPosition(new Position(0, snake.getPosition().getPosY()));
@@ -228,12 +319,17 @@ public class SnakeEngine extends SurfaceView implements
             canvas = surfaceHolder.lockCanvas();
 
             canvas.drawColor(Color.argb(255, 10, 60, 100));
-
+            int i = 0;
             for (BodyPart snake1 : snake.cuerpo) {
 
-                paint.setColor(Color.argb(255, 118, 140, 48));
+                if (i % 2 == 0) {
+                    paint.setColor(Color.argb(255, 80, 110, 48));
+                } else {
+                    paint.setColor(Color.argb(255, 118, 140, 48));
+                }
                 canvas.drawRect(snake1.getPosition().getPosX() * blockSize, (snake1.getPosition().getPosY() * blockSize), (snake1.getPosition().getPosX() * blockSize) + blockSize, (snake1.getPosition().getPosY() * blockSize) + blockSize, paint);
 
+                i++;
             }
 
             Bitmap snakeHead = BitmapFactory.decodeResource(context.getResources(), R.drawable.snake_head);
@@ -247,20 +343,24 @@ public class SnakeEngine extends SurfaceView implements
             } else if (snake.getOrienteton() == 1) {
                 canvas.drawBitmap(rotateBitmap(snakeHeadSized, -90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
             }
-            /*paint.setColor(snake.getColor());
-            canvas.drawRect(snake.getPosition().getPosX() * blockSize, (snake.getPosition().getPosY() * blockSize), (snake.getPosition().getPosX() * blockSize) + blockSize, (snake.getPosition().getPosY() * blockSize) + blockSize, paint);
-            */
-
             spawnApple();
-            paint.setColor(Color.WHITE);
-            paint.setTextSize(60);
-            paint.setFakeBoldText(true);
-
-            canvas.drawText("Puntuación: " + snake.getSize(), screenX / 3, 3 * blockSize, paint);
+            puntuacion();
             surfaceHolder.unlockCanvasAndPost(canvas);
 
 
         }
+    }
+
+    private void puntuacion() {
+        Paint textPaint = new Paint();
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setColor(Color.WHITE);
+        textPaint.setTextSize(80);
+        textPaint.setFakeBoldText(true);
+        canvas.drawText(score + snake.getSize(),
+                screenX /2,
+                2 * blockSize + blockSize/8,
+                textPaint);
     }
 
     float firstX_point, firstY_point;
@@ -277,11 +377,6 @@ public class SnakeEngine extends SurfaceView implements
                     newGame();
                     dead = false;
                 }
-                if (onpause) {
-                    isPlaying = false;
-
-                }
-
                 firstX_point = event.getRawX();
                 firstY_point = event.getRawY();
 
@@ -294,30 +389,45 @@ public class SnakeEngine extends SurfaceView implements
 
                 int distanceX = (int) (finalX - firstX_point);
                 int distanceY = (int) (finalY - firstY_point);
+                if (inicio) {
+                    inicio = false;
 
-                if (Math.abs(distanceX) > Math.abs(distanceY)) {
-                    if ((firstX_point < finalX)) {
-                        if (snake.cuerpo.isEmpty()) {
-                            setOirentetion(1);
-                        } else if (snake.getOrienteton() != 3)
-                            setOirentetion(1);
+                }
+                else if (intro){
+                    intro = false;
+                    newGame();
+                }
+                else {
+                    if (onpause) {
+                        onpause = false;
+
                     } else {
-                        if (snake.cuerpo.isEmpty()) {
-                            setOirentetion(3);
-                        } else if (snake.getOrienteton() != 1)
-                            setOirentetion(3);
-                    }
-                } else {
-                    if ((firstY_point < finalY)) {
-                        if (snake.cuerpo.isEmpty()) {
-                            setOirentetion(2);
-                        } else if (snake.getOrienteton() != 0)
-                            setOirentetion(2);
-                    } else {
-                        if (snake.cuerpo.isEmpty()) {
-                            setOirentetion(0);
-                        } else if (snake.getOrienteton() != 2)
-                            setOirentetion(0);
+
+                        if (Math.abs(distanceX) > Math.abs(distanceY)) {
+                            if ((firstX_point < finalX)) {
+                                if (snake.cuerpo.isEmpty()) {
+                                    setOirentetion(1);
+                                } else if (snake.getOrienteton() != 3)
+                                    setOirentetion(1);
+                            } else {
+                                if (snake.cuerpo.isEmpty()) {
+                                    setOirentetion(3);
+                                } else if (snake.getOrienteton() != 1)
+                                    setOirentetion(3);
+                            }
+                        } else {
+                            if ((firstY_point < finalY)) {
+                                if (snake.cuerpo.isEmpty()) {
+                                    setOirentetion(2);
+                                } else if (snake.getOrienteton() != 0)
+                                    setOirentetion(2);
+                            } else {
+                                if (snake.cuerpo.isEmpty()) {
+                                    setOirentetion(0);
+                                } else if (snake.getOrienteton() != 2)
+                                    setOirentetion(0);
+                            }
+                        }
                     }
                 }
                 break;

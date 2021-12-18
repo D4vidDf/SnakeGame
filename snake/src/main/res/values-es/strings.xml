@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="control">M O V I M I E N T O</string>
+    <string name="desc_control">Pulsa para cambiar la orientación</string>
+    <string name="strat">Pulsar para empezar</string>
+    <string name="new_game">Pulsa para empezar nueva partida</string>
+    <string name="resume">EN PAUSA</string>
+    <string name="resume_desc">Pulsa para reanudar partida</string>
+    <string name="point">"Puntaje: "</string>
+</resources>

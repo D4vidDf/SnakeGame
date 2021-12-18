@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.SnakeGame" parent="">
+        <!-- Primary brand color. -->
+        <item name="android:navigationBarColor">@color/back</item>
+
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/back</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

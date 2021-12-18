@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">SnakeGame</string>
+    <string name="app_name" translatable="false">S N A K E</string>
+    <string name="control">M O V E M E N T</string>
+    <string name="desc_control">Swipe to change the orientation of the snake</string>
+    <string name="strat">Press to start</string>
+    <string name="new_game">Press to start a new game</string>
+    <string name="resume">RESUME</string>
+    <string name="resume_desc">Press to resume game</string>
+    <string name="point">"Score: "</string>
 </resources>
