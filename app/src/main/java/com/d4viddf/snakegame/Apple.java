@@ -22,10 +22,6 @@ public class Apple {
         return position;
     }
 
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-
     public void setPosition(int x, int y) {
         if (!pos) {
             Random random = new Random();

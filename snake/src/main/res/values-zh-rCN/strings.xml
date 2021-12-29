@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="control">移動</string>
+    <string name="desc_control">按更改方向</string>
+    <string name="strat">按開始</string>
+    <string name="new_game">按下開始新遊戲</string>
+    <string name="resume">恢復</string>
+    <string name="resume_desc">按繼續遊戲</string>
+    <string name="point">"分數: "</string>
+</resources>

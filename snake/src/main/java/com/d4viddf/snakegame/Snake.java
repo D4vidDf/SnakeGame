@@ -16,12 +16,6 @@ public class Snake {
         cuerpo = new ArrayList<>();
     }
 
-    public Snake(Snake snake) {
-        this.position = snake.getPosition();
-        this.color = snake.getColor();
-        cuerpo = snake.cuerpo;
-    }
-
     public Snake(Position position) {
         this.position = position;
         cuerpo = new ArrayList<>();

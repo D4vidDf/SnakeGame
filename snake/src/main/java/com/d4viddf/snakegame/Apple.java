@@ -14,16 +14,8 @@ public class Apple {
         position = new Position();
     }
 
-    public Apple(Position position) {
-        this.position = position;
-    }
-
     public Position getPosition() {
         return position;
-    }
-
-    public void setPosition(Position position) {
-        this.position = position;
     }
 
     public void setPosition(int x, int y) {

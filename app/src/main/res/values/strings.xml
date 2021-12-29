@@ -7,4 +7,7 @@
     <string name="resume">RESUME</string>
     <string name="resume_desc">Press to resume game</string>
     <string name="point">"Score: "</string>
+    <string name="login">LOG IN</string>
+    <string name="logout">LOG OUT</string>
+    <string name="play_game">PLAY GAME</string>
 </resources>

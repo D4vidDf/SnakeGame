@@ -1,5 +1,6 @@
 package com.d4viddf.snakegame;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,23 +14,30 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+@SuppressLint("ViewConstructor")
 public class SnakeEngine extends SurfaceView implements
         Runnable {
     public MediaPlayer mp;
     private Thread thread = null;
-    private Context context;
-    private int screenX;
-    private int screenY;
-    private int blockSize;
+    private final Context context;
+    private final int screenX;
+    private final int screenY;
+    private final int blockSize;
     private Canvas canvas;
-    private SurfaceHolder surfaceHolder;
-    private int NUM_BLOCKS_WIDE = 20;
-    private Paint paint;
+    private final SurfaceHolder surfaceHolder;
+    private final int NUM_BLOCKS_WIDE = 20;
+    private final Paint paint;
     int numBlocksHigh;
     private Snake snake;
     private Apple apple;
     private boolean isPlaying, dead = false, onpause = false, inicio = true, intro = true;
-    private String score, resume, control, desc_control, strat, new_game, resume_desc;
+    private final String score;
+    private final String resume;
+    private final String control;
+    private final String desc_control;
+    private final String strat;
+    private final String new_game;
+    private final String resume_desc;
 
     public SnakeEngine(MainActivity mainActivity, Point
             size, MediaPlayer mediaPlayer) {
@@ -63,7 +71,7 @@ public class SnakeEngine extends SurfaceView implements
         while (isPlaying) {
             //va muy rapido, no es jugable
             try {
-                thread.sleep(30);
+                Thread.sleep(30);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -220,7 +228,6 @@ public class SnakeEngine extends SurfaceView implements
             if (apple.getPosition().getPosX() == snake.getPosition().getPosX()
                     && apple.getPosition().getPosY() == snake.getPosition().getPosY()) {
                 snake.setSize(snake.getSize() + 1);
-                Snake sp = new Snake();
                 if (snake.cuerpo.isEmpty()) {
                     snake.addBodyPart(snake);
                 } else {
@@ -233,17 +240,16 @@ public class SnakeEngine extends SurfaceView implements
 
     }
 
-    private boolean isSnakeDeath() {
+    private void isSnakeDeath() {
         for (BodyPart bodyPart : snake.cuerpo) {
             if (bodyPart.getPosition().getPosX() == snake.getPosition().getPosX()
                     && bodyPart.getPosition().getPosY() == snake.getPosition().getPosY()) {
                 dead = true;
                 mp.pause();
-                return true;
+                return;
             }
         }
         dead = false;
-        return false;
     }
 
     public void setOirentetion(int i) {
@@ -352,6 +358,7 @@ public class SnakeEngine extends SurfaceView implements
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
@@ -400,8 +407,6 @@ public class SnakeEngine extends SurfaceView implements
         Matrix matrix = new Matrix();
         matrix.preRotate(degrees);
 
-        Bitmap rotatedBitmap = Bitmap.createBitmap(original, 0, 0, width, height, matrix, true);
-
-        return rotatedBitmap;
+        return Bitmap.createBitmap(original, 0, 0, width, height, matrix, true);
     }
 }

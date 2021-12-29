@@ -19,7 +19,6 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         mp = MediaPlayer.create(this,R.raw.retrobit);
         mp.setLooping(true);
-        View view = new View(this);
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">S N A K E</string>
     <string name="control">M O V I M I E N T O</string>
     <string name="desc_control">Desliza para cambiar la orientación</string>
     <string name="strat">Pulsar para empezar</string>
@@ -8,4 +7,7 @@
     <string name="resume">EN PAUSA</string>
     <string name="resume_desc">Pulsa para reanudar partida</string>
     <string name="point">"Puntaje: "</string>
+    <string name="login">INICIAR SESIÓN</string>
+    <string name="logout">CERRAR SESIÓN</string>
+    <string name="play_game">JUGAR</string>
 </resources>

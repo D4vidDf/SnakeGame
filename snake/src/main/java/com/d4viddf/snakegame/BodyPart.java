@@ -6,10 +6,6 @@ public class BodyPart {
     Position position;
     int color = Color.argb(160,196,50,255);
 
-    public BodyPart(Position position, int color) {
-        this.position = position;
-    }
-
     public BodyPart(Object bp) {
         clone(bp);
     }
@@ -17,8 +13,7 @@ public class BodyPart {
 
 
     public void setPosition(Position position) {
-        Position p = new Position(position);
-        this.position = p;
+        this.position = new Position(position);
     }
 
     public void setColor(int color) {
@@ -35,17 +30,16 @@ public class BodyPart {
 
     public void clone(Object ob) {
         try {
-            BodyPart bp = (BodyPart) ob;
             setColor(((BodyPart) ob).color);
             setPosition(((BodyPart) ob).position);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
         try {
             setColor(((Snake) ob).getColor());
             setPosition(((Snake) ob).getPosition());
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 }
