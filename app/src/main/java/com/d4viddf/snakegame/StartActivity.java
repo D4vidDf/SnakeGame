@@ -29,7 +29,7 @@ public class StartActivity extends AppCompatActivity {
     private MaterialCardView card;
     private TextView username;
     private boolean permiso = true;
-
+    private PrefManager prefManager;
     private static final int RC_SIGN_IN = 9001;
     private GoogleSignInOptions signInOptions;
     private PlayersClient mPlayersClient;
@@ -38,37 +38,42 @@ public class StartActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-
+        prefManager = new PrefManager(this);
         signInOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
                         .requestScopes(Games.SCOPE_GAMES_SNAPSHOTS)
                         .build();
-
         MaterialButton play = findViewById(R.id.play);
         play.setOnClickListener(v -> {
+            new Utils().vibrateButtonApple(getApplicationContext());
             Intent intent = new Intent(StartActivity.this, Controls.class);
             startActivity(intent);
         });
-
         login = findViewById(R.id.login);
-        if (mPlayersClient != null) {
-            login.setText(R.string.logout);
-        } else login.setText(R.string.login);
+
+        login.setText(mPlayersClient != null ? R.string.logout : R.string.login);
         login.setOnClickListener(v -> {
-            if (mPlayersClient == null) {
-                startSignInIntent();
-                login.setText(R.string.logout);
-            } else {
+            new Utils().vibrateButtonApple(getApplicationContext());
+            if (mPlayersClient != null) {
                 onDisconnected();
                 login.setText(R.string.login);
+            } else {
+                startSignInIntent();
+                login.setText(R.string.logout);
             }
         });
-
         card = findViewById(R.id.ach);
-        if (mPlayersClient == null) card.setVisibility(View.GONE);
+        if (prefManager.isUserChild()) {
+            login.setVisibility(View.GONE);
+            card.setVisibility(View.GONE);
+            onDisconnected();
+        }
+        if (!prefManager.isUserChild() && mPlayersClient == null) card.setVisibility(View.GONE);
         username = findViewById(R.id.username);
-        card.setOnClickListener(v -> showAchievements());
-
+        card.setOnClickListener(v -> {
+            new Utils().vibrateButtonApple(getApplicationContext());
+            showAchievements();
+        });
     }
 
 
@@ -104,8 +109,6 @@ public class StartActivity extends AppCompatActivity {
         GoogleSignIn.getClient(this, signInOptions).signOut();
         login.setText(R.string.login);
         mPlayersClient = null;
-
-
     }
 
     private void onConnected(GoogleSignInAccount account) {
@@ -129,10 +132,8 @@ public class StartActivity extends AppCompatActivity {
                 });
         checkPlayerStats();
         Log.i("Login", mPlayersClient.getCurrentPlayer().toString());
+        login.setText(mPlayersClient != null ? R.string.logout : R.string.login);
         card.setVisibility(View.VISIBLE);
-        if (mPlayersClient != null) {
-            login.setText(R.string.logout);
-        } else login.setText(R.string.login);
     }
 
     private static final int RC_ACHIEVEMENT_UI = 9003;
@@ -148,10 +149,7 @@ public class StartActivity extends AppCompatActivity {
                 .loadPlayerStats(true)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Check for cached data.
-                        if (task.getResult().isStale()) {
-                            Log.d("TAG", "using cached data");
-                        }
+                        if (task.getResult().isStale()) Log.d("TAG", "using cached data");
                         PlayerStats stats = task.getResult().get();
                         if (stats != null) {
                             if (stats.getNumberOfSessions() > 1000) {
@@ -169,6 +167,6 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPlayersClient == null && permiso) startSignInIntent();
+        if (!prefManager.isUserChild() && mPlayersClient == null && permiso) startSignInIntent();
     }
 }

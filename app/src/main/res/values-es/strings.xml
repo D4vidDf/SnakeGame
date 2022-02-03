@@ -10,4 +10,7 @@
     <string name="login">INICIAR SESIÓN</string>
     <string name="logout">CERRAR SESIÓN</string>
     <string name="play_game">JUGAR</string>
+    <string name="seleccionar_edad">Seleccionar edad:</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="maxpoint">"Puntaje más alto: "</string>
 </resources>

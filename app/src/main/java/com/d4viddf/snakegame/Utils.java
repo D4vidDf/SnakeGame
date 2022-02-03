@@ -1,9 +1,13 @@
 package com.d4viddf.snakegame;
 
+import static android.content.Context.VIBRATOR_SERVICE;
+
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 public class Utils {
 
@@ -15,26 +19,21 @@ public class Utils {
         Bitmap rotatedBitmap = Bitmap.createBitmap(original, 0, 0, width, height, matrix, true);
         return rotatedBitmap;
     }
-    private void backgroundPaint() {
 
-        /*for (int i = 0; i < numBlocksHigh; i++) {
-            for (int ii = 0; ii < NUM_BLOCKS_WIDE; ii++) {
-                if (i % 2 != 0) {
-                    if (ii % 2 == 0) {
-                        Paint paint2 = new Paint();
-                        paint2.setColor(Color.argb(60, 67, 98, 140));
-                        canvas.drawRect(ii * blockSize, (i * blockSize), (ii * blockSize) + blockSize, (i * blockSize) + blockSize, paint2);
-                    }
-                } else if (ii % 2 != 0) {
-                    Paint paint2 = new Paint();
-                    paint2.setColor(Color.argb(60, 67, 98, 140));
-                    canvas.drawRect(ii * blockSize, (i * blockSize), (ii * blockSize) + blockSize, (i * blockSize) + blockSize, paint2);
+    public void vibrateEatApple(Context context){
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) context.getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(120, VibrationEffect.EFFECT_TICK));
+        } else {
+            ((Vibrator) context.getSystemService(VIBRATOR_SERVICE)).vibrate(120);
+        }
+    }
 
-                }
-
-            }
-        }*/
-
+    public void vibrateButtonApple(Context context){
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) context.getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(80, VibrationEffect.EFFECT_TICK));
+        } else {
+            ((Vibrator) context.getSystemService(VIBRATOR_SERVICE)).vibrate(80);
+        }
     }
 
 }

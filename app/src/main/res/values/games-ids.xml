@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Google Play game services IDs. Save this file as res/values/games-ids.xml in your project.-->
+<resources>
+    <!--app_id-->
+    <string name="app_id" translatable="false">341413296655</string>
+    <!--package_name-->
+    <string name="package_name" translatable="false">com.d4viddf.snakegame</string>
+    <!--achievement Apple lover-->
+    <string name="achievement_apple_lover" translatable="false">CgkIj_TF7vcJEAIQAQ</string>
+    <!--achievement Beginner-->
+    <string name="achievement_beginner" translatable="false">CgkIj_TF7vcJEAIQAg</string>
+    <!--achievement Apprentice-->
+    <string name="achievement_apprentice" translatable="false">CgkIj_TF7vcJEAIQAw</string>
+    <!--achievement Master-->
+    <string name="achievement_master" translatable="false">CgkIj_TF7vcJEAIQBA</string>
+    <!--achievement Snake charmer-->
+    <string name="achievement_snake_charmer" translatable="false">CgkIj_TF7vcJEAIQBQ</string>
+    <!--achievement Learning to play-->
+    <string name="achievement_learning_to_play" translatable="false">CgkIj_TF7vcJEAIQCQ</string>
+    <!--achievement Addicted to the game-->
+    <string name="achievement_addicted_to_the_game" translatable="false">CgkIj_TF7vcJEAIQCg</string>
+    <!--achievement Mobile addict-->
+    <string name="achievement_mobile_addict" translatable="false">CgkIj_TF7vcJEAIQCw</string>
+    <!--leaderboard Classification-->
+    <string name="leaderboard_classification" translatable="false">CgkIj_TF7vcJEAIQCA</string>
+</resources>

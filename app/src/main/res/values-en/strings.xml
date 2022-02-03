@@ -10,4 +10,7 @@
     <string name="login">LOG IN</string>
     <string name="logout">LOG OUT</string>
     <string name="play_game">PLAY GAME</string>
+    <string name="seleccionar_edad">Select age:</string>
+    <string name="aceptar">Save</string>
+    <string name="maxpoint">Best Score:</string>
 </resources>

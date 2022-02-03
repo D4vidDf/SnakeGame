@@ -10,8 +10,8 @@ import static com.d4viddf.snakegame.R.string.achievement_learning_to_play;
 import static com.d4viddf.snakegame.R.string.achievement_master;
 import static com.d4viddf.snakegame.R.string.achievement_snake_charmer;
 import static com.d4viddf.snakegame.R.string.leaderboard_classification;
+import static com.d4viddf.snakegame.R.string.maxpoint;
 import static com.d4viddf.snakegame.R.string.point;
-
 import static java.lang.Thread.sleep;
 
 import android.annotation.SuppressLint;
@@ -34,9 +34,9 @@ import com.google.android.gms.games.GamesClient;
 
 import java.util.Objects;
 
+@SuppressLint("ViewConstructor")
 public class SnakeEngine extends SurfaceView implements
         Runnable {
-
     public MediaPlayer mp;
     private Thread thread = null;
     private final Context context;
@@ -57,7 +57,9 @@ public class SnakeEngine extends SurfaceView implements
     private final String resume;
     private final String new_game;
     private final String resume_desc;
+    private final String maxscore;
     private final Point size;
+    private PrefManager prefManager;
 
 
     public SnakeEngine(MainActivity mainActivity, Point
@@ -65,8 +67,11 @@ public class SnakeEngine extends SurfaceView implements
         super(mainActivity);
         this.mp = mediaPlayer;
         this.size = size;
-        this.mp.setVolume(0.3f,0.2f);
+        this.mp.setVolume(0.3f, 0.2f);
+
+        prefManager = new PrefManager(getContext());
         context = mainActivity;
+        maxscore = (String) context.getResources().getText(maxpoint);
         score = (String) context.getResources().getText(point);
         resume = (String) context.getResources().getText(string.resume);
         resume_desc = (String) context.getResources().getText(string.resume_desc);
@@ -81,7 +86,7 @@ public class SnakeEngine extends SurfaceView implements
         draw();
         newGame();
         apple = new Apple();
-        if (GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
+        if (!prefManager.isUserChild() && GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
             GamesClient gamesClient = Games.getGamesClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context.getApplicationContext())));
             gamesClient.setViewForPopups(findViewById(android.R.id.content));
             gamesClient.setGravityForPopups(Gravity.TOP | Gravity.CENTER_HORIZONTAL);
@@ -92,25 +97,19 @@ public class SnakeEngine extends SurfaceView implements
     public void run() {
         while (isPlaying) {
             try {
-                sleep(60);
+                sleep(24);
+                if (!onpause) {
+                    if (!dead) {
+                        draw();
+                        update();
+                        if (!mp.isPlaying()) mp.start();
+                    } else endgame();
+                } else pauseMenu();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (onpause) {
-                pauseMenu();
-            } else {
-                if (!dead) {
-                    draw();
-                    update();
-
-                    if (!mp.isPlaying()) mp.start();
-                } else {
-                    endgame();
-                }
-            }
 
         }
-
     }
 
 
@@ -118,18 +117,24 @@ public class SnakeEngine extends SurfaceView implements
         if (surfaceHolder.getSurface().isValid()) {
             canvas = surfaceHolder.lockCanvas();
             canvas.drawColor(Color.argb(255, 10, 60, 100));
+            Paint textPaintMax = new Paint();
+            textPaintMax.setTextAlign(Paint.Align.CENTER);
+            textPaintMax.setColor(Color.WHITE);
+            if (size.x <= 1000) textPaintMax.setTextSize(30);
+            else textPaintMax.setTextSize(60);
+            textPaintMax.setFakeBoldText(true);
+            canvas.drawText(maxscore + prefManager.getMaxPoint(),
+                    screenX / 2,
+                    4 * blockSize - blockSize / 8,
+                    textPaintMax);
             Paint textPaint = new Paint();
             textPaint.setTextAlign(Paint.Align.CENTER);
             textPaint.setColor(Color.WHITE);
-            if (size.x < 1000)
-                textPaint.setTextSize(40);
-            else textPaint.setTextSize(80);
+            textPaint.setTextSize(size.x < 1000 ? 40 : 80);
             textPaint.setFakeBoldText(true);
             canvas.drawText("G A M E  O V E R", screenX / 2, screenY / 2, textPaint);
             textPaint.setColor(Color.WHITE);
-            if (size.x < 1000)
-                textPaint.setTextSize(20);
-            else textPaint.setTextSize(45);
+            textPaint.setTextSize(size.x < 1000 ? 20 : 45);
             textPaint.setFakeBoldText(true);
             canvas.drawText(new_game, screenX / 2, screenY / 2 + screenY / 3, textPaint);
             Paint img = new Paint();
@@ -148,15 +153,11 @@ public class SnakeEngine extends SurfaceView implements
             Paint textPaint = new Paint();
             textPaint.setTextAlign(Paint.Align.CENTER);
             textPaint.setColor(Color.WHITE);
-            if (size.x < 1000)
-                textPaint.setTextSize(40);
-            else textPaint.setTextSize(80);
+            textPaint.setTextSize(size.x < 1000 ? 40 : 80);
             textPaint.setFakeBoldText(true);
             canvas.drawText(resume, screenX / 2, screenY / 2, textPaint);
             textPaint.setColor(Color.WHITE);
-            if (size.x < 1000)
-                textPaint.setTextSize(20);
-            else textPaint.setTextSize(45);
+            textPaint.setTextSize(size.x < 1000 ? 20 : 45);
             textPaint.setFakeBoldText(true);
             canvas.drawText(resume_desc, screenX / 2, screenY / 2 + screenY / 3, textPaint);
             Paint img = new Paint();
@@ -170,13 +171,11 @@ public class SnakeEngine extends SurfaceView implements
                 logoSized = Bitmap.createScaledBitmap(logo, blockSize * 10, blockSize * 10, false);
                 canvas.drawBitmap(logoSized, screenX / 4 + screenX / 14, screenY / 6, img);
             }
-
             surfaceHolder.unlockCanvasAndPost(canvas);
         }
     }
 
     public void pause() {
-
         isPlaying = false;
         try {
             thread.join();
@@ -186,7 +185,6 @@ public class SnakeEngine extends SurfaceView implements
         mp.pause();
         pauseMenu();
         onpause = true;
-
     }
 
     public void resume() {
@@ -200,7 +198,7 @@ public class SnakeEngine extends SurfaceView implements
         Position pos = new Position(NUM_BLOCKS_WIDE / 2, numBlocksHigh / 2);
         snake = new Snake(pos);
         onpause = false;
-        if (GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
+        if (!prefManager.isUserChild() && GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
             Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
                     .increment(context.getString(achievement_learning_to_play), 1);
             Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
@@ -221,35 +219,41 @@ public class SnakeEngine extends SurfaceView implements
             if (apple.getPosition().getPosX() == snake.getPosition().getPosX()
                     && apple.getPosition().getPosY() == snake.getPosition().getPosY()) {
                 snake.setSize(snake.getSize() + 1);
-                if (snake.cuerpo.isEmpty()) {
-                    snake.addBodyPart(snake);
-                } else {
-                    snake.addBodyPart(snake.cuerpo.get(snake.cuerpo.size() - 1));
-                }
+                snake.addBodyPart(!snake.cuerpo.isEmpty() ? snake.cuerpo.get(snake.cuerpo.size() - 1) : snake);
                 apple = new Apple();
+                new Utils().vibrateEatApple(getContext());
                 spawnApple();
-                if (GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
-                    Games.getAchievementsClient(getContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
-                            .unlock(context.getString(achievement_apple_lover));
-                    Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
-                            .increment(context.getString(achievement_beginner), 1);
-                    Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
-                            .increment(context.getString(achievement_apprentice), 1);
-                    Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
-                            .increment(context.getString(achievement_master), 1);
-
-                    if (snake.getSize() == 50) {
-                        Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
-                                .unlock(context.getString(achievement_snake_charmer));
-                    }
-
-                }
-
-                if (GoogleSignIn.getLastSignedInAccount(getContext()) != null)
-                    Games.getLeaderboardsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context.getApplicationContext())))
-                            .submitScore(context.getString(leaderboard_classification), snake.getSize());
+                logros();
+                maxPuntuacion();
 
             }
+        }
+    }
+
+    private void maxPuntuacion() {
+        if (prefManager.getMaxPoint() < snake.getSize()) {
+            prefManager.setMaxPoint(snake.getSize());
+        }
+    }
+
+    private void logros() {
+        if (!prefManager.isUserChild() && GoogleSignIn.getLastSignedInAccount(getContext()) != null) {
+            Games.getAchievementsClient(getContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
+                    .unlock(context.getString(achievement_apple_lover));
+            Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
+                    .increment(context.getString(achievement_beginner), 1);
+            Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
+                    .increment(context.getString(achievement_apprentice), 1);
+            Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
+                    .increment(context.getString(achievement_master), 1);
+
+            if (snake.getSize() == 50) {
+                Games.getAchievementsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context)))
+                        .unlock(context.getString(achievement_snake_charmer));
+            }
+
+            Games.getLeaderboardsClient(context.getApplicationContext(), Objects.requireNonNull(GoogleSignIn.getLastSignedInAccount(context.getApplicationContext())))
+                    .submitScore(context.getString(leaderboard_classification), snake.getSize());
         }
     }
 
@@ -260,11 +264,9 @@ public class SnakeEngine extends SurfaceView implements
                     && bodyPart.getPosition().getPosY() == snake.getPosition().getPosY()) {
                 dead = true;
                 mp.pause();
-
                 return;
             }
         }
-
         dead = false;
     }
 
@@ -280,47 +282,54 @@ public class SnakeEngine extends SurfaceView implements
     }
 
     private void getOrientation() {
-        if (snake.getOrienteton() == 0) {
-            snake.getPosition().setPosY(snake.getPosition().getPosY() - 1);
-        } else if (snake.getOrienteton() == 1) {
-            snake.getPosition().setPosX(snake.getPosition().getPosX() + 1);
-        } else if (snake.getOrienteton() == 2) {
-            snake.getPosition().setPosY(snake.getPosition().getPosY() + 1);
-        } else if (snake.getOrienteton() == 3) {
-            snake.getPosition().setPosX(snake.getPosition().getPosX() - 1);
+        switch (snake.getOrienteton()) {
+            case 0:
+                snake.getPosition().setPosY(snake.getPosition().getPosY() - 1);
+                break;
+            case 1:
+                snake.getPosition().setPosX(snake.getPosition().getPosX() + 1);
+                break;
+            case 2:
+                snake.getPosition().setPosY(snake.getPosition().getPosY() + 1);
+                break;
+            case 3:
+                snake.getPosition().setPosX(snake.getPosition().getPosX() - 1);
+                break;
         }
+
         BodyPart bp;
-        if (!snake.cuerpo.isEmpty()) {
+        if (!snake.cuerpo.isEmpty())
             for (int i = snake.cuerpo.size() - 1; i >= 0; i--) {
                 bp = snake.cuerpo.get(i);
                 if (i == 0) {
                     bp.setPosition(snake.getPosition());
-                    if (snake.getOrienteton() == 0) {
-                        bp.getPosition().setPosY(snake.getPosition().getPosY() + 1);
-                    } else if (snake.getOrienteton() == 1) {
-                        bp.getPosition().setPosX(snake.getPosition().getPosX() - 1);
-                    } else if (snake.getOrienteton() == 2) {
-                        bp.getPosition().setPosY(snake.getPosition().getPosY() - 1);
-                    } else if (snake.getOrienteton() == 3) {
-                        bp.getPosition().setPosX(snake.getPosition().getPosX() + 1);
+                    switch (snake.getOrienteton()) {
+                        case 0:
+                            bp.getPosition().setPosY(snake.getPosition().getPosY() + 1);
+                            break;
+                        case 1:
+                            bp.getPosition().setPosX(snake.getPosition().getPosX() - 1);
+                            break;
+                        case 2:
+                            bp.getPosition().setPosY(snake.getPosition().getPosY() - 1);
+                            break;
+                        case 3:
+                            bp.getPosition().setPosX(snake.getPosition().getPosX() + 1);
+                            break;
                     }
-                } else {
-                    bp.setPosition(snake.cuerpo.get(i - 1).position);
-                }
+                } else bp.setPosition(snake.cuerpo.get(i - 1).position);
             }
-        }
     }
 
     private void isScreenBorder() {
-        if (snake.getPosition().getPosX() >= NUM_BLOCKS_WIDE) {
-            snake.setPosition(new Position(0, snake.getPosition().getPosY()));
-        } else if (snake.getPosition().getPosY() >= numBlocksHigh) {
-            snake.setPosition(new Position(snake.getPosition().PosX, 0));
-        } else if (snake.getPosition().getPosX() < 0) {
-            snake.setPosition(new Position(NUM_BLOCKS_WIDE, snake.getPosition().getPosY()));
-        } else if (snake.getPosition().getPosY() < 0) {
-            snake.setPosition(new Position(snake.getPosition().PosX, numBlocksHigh));
-        }
+        if (snake.getPosition().getPosX() < NUM_BLOCKS_WIDE) {
+            if (snake.getPosition().getPosY() < numBlocksHigh) {
+                if (snake.getPosition().getPosX() < 0) {
+                    snake.setPosition(new Position(NUM_BLOCKS_WIDE, snake.getPosition().getPosY()));
+                } else if (snake.getPosition().getPosY() < 0)
+                    snake.setPosition(new Position(snake.getPosition().PosX, numBlocksHigh));
+            } else snake.setPosition(new Position(snake.getPosition().PosX, 0));
+        } else snake.setPosition(new Position(0, snake.getPosition().getPosY()));
 
     }
 
@@ -339,44 +348,52 @@ public class SnakeEngine extends SurfaceView implements
     private void snakeHeadPaint() {
         Bitmap snakeHead = BitmapFactory.decodeResource(context.getResources(), drawable.snake_head);
         Bitmap snakeHeadSized = Bitmap.createScaledBitmap(snakeHead, blockSize * 2, blockSize * 2, false);
-        if (snake.getOrienteton() == 2) {
+        if (snake.getOrienteton() != 2) {
+            if (snake.getOrienteton() != 3) {
+                if (snake.getOrienteton() == 0) {
+                    canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, 180), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+                } else if (snake.getOrienteton() == 1)
+                    canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, -90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+            } else
+                canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, 90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
+        } else
             canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, 0), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-        } else if (snake.getOrienteton() == 3) {
-            canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, 90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-        } else if (snake.getOrienteton() == 0) {
-            canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, 180), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-        } else if (snake.getOrienteton() == 1) {
-            canvas.drawBitmap(Utils.rotateBitmap(snakeHeadSized, -90), (snake.getPosition().getPosX() * blockSize) - (blockSize / 2), (snake.getPosition().getPosY() * blockSize) - (blockSize / 2), paint);
-        }
     }
 
     private void bodyPartPaint() {
         int i = 0;
         for (BodyPart snake1 : snake.cuerpo) {
-
-            if (i % 2 == 0) {
-                paint.setColor(Color.argb(255, 80, 110, 48));
-            } else {
-                paint.setColor(Color.argb(255, 118, 140, 48));
-            }
+            if (i % 2 != 0) paint.setColor(Color.argb(255, 118, 140, 48));
+            else paint.setColor(Color.argb(255, 80, 110, 48));
             canvas.drawRect(snake1.getPosition().getPosX() * blockSize, (snake1.getPosition().getPosY() * blockSize), (snake1.getPosition().getPosX() * blockSize) + blockSize, (snake1.getPosition().getPosY() * blockSize) + blockSize, paint);
-
             i++;
         }
     }
 
     private void puntuacion() {
+        //Puntuacion actual
         Paint textPaint = new Paint();
         textPaint.setTextAlign(Paint.Align.CENTER);
         textPaint.setColor(Color.WHITE);
-        if (size.x < 1000)
-            textPaint.setTextSize(40);
+        if (size.x <= 1000) textPaint.setTextSize(40);
         else textPaint.setTextSize(80);
         textPaint.setFakeBoldText(true);
         canvas.drawText(score + snake.getSize(),
                 screenX / 2,
                 2 * blockSize + blockSize / 6,
                 textPaint);
+
+        //Máxima puntuacion
+        Paint textPaintMax = new Paint();
+        textPaintMax.setTextAlign(Paint.Align.CENTER);
+        textPaintMax.setColor(Color.WHITE);
+        if (size.x <= 1000) textPaintMax.setTextSize(30);
+        else textPaintMax.setTextSize(60);
+        textPaintMax.setFakeBoldText(true);
+        canvas.drawText(maxscore + prefManager.getMaxPoint(),
+                screenX / 2,
+                4 * blockSize - blockSize / 8,
+                textPaintMax);
     }
 
     float firstX_point, firstY_point;
@@ -387,12 +404,9 @@ public class SnakeEngine extends SurfaceView implements
         int action = event.getAction();
 
         switch (action) {
-
-
             case MotionEvent.ACTION_DOWN:
                 firstX_point = event.getRawX();
                 firstY_point = event.getRawY();
-
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -403,56 +417,75 @@ public class SnakeEngine extends SurfaceView implements
                 int distanceX = (int) (finalX - firstX_point);
                 int distanceY = (int) (finalY - firstY_point);
 
-                if (onpause) {
+                if (!onpause) {
+                    if (!dead) {
+                        if (firstX_point != finalX || firstY_point != finalY) {
+
+                            if (Math.abs(distanceX) <= Math.abs(distanceY)) {
+                                if ((!(firstY_point < finalY))) {
+                                    if (snake.cuerpo.isEmpty()) {
+                                        setOirentetion(0);
+                                        break;
+                                    } else if (snake.getOrienteton() != 2)
+                                        setOirentetion(0);
+                                    break;
+                                } else {
+                                    if (snake.cuerpo.isEmpty()) {
+                                        setOirentetion(2);
+                                        break;
+                                    } else if (snake.getOrienteton() != 0)
+                                        setOirentetion(2);
+                                    break;
+                                }
+                            } else {
+                                if ((!(firstX_point < finalX))) {
+                                    if (!snake.cuerpo.isEmpty()) {
+                                        if (snake.getOrienteton() != 1)
+                                            setOirentetion(3);
+                                        break;
+                                    } else
+                                        setOirentetion(3);
+                                    break;
+                                } else {
+                                    if (!snake.cuerpo.isEmpty()) {
+                                        if (snake.getOrienteton() != 3)
+                                            setOirentetion(1);
+                                        break;
+                                    } else
+                                        setOirentetion(1);
+                                    break;
+                                }
+                            }
+                        } else {
+                            if (snake.getOrienteton() != 0) {
+                                if (snake.getOrienteton() != 1) {
+                                    if (snake.getOrienteton() != 2) {
+                                        setOirentetion(2);
+                                        break;
+                                    } else
+                                        setOirentetion(1);
+                                    break;
+                                } else
+                                    setOirentetion(0);
+                                break;
+                            } else
+                                setOirentetion(3);
+                            break;
+                        }
+                    } else {
+                        dead = false;
+                        new Utils().vibrateButtonApple(context);
+                        try {
+                            sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        newGame();
+
+                    }
+                } else
+                    new Utils().vibrateButtonApple(context);
                     onpause = false;
-
-                } else if (dead) {
-                    dead = false;
-                    newGame();
-                    try {
-                        sleep(40);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else if (firstX_point == finalX && firstY_point == finalY) {
-                    if (snake.getOrienteton() == 0) {
-                        setOirentetion(3);
-                    } else if (snake.getOrienteton() == 1) {
-                        setOirentetion(0);
-                    } else if (snake.getOrienteton() == 2) {
-                        setOirentetion(1);
-                    } else {
-                        setOirentetion(2);
-                    }
-                } else {
-
-                    if (Math.abs(distanceX) > Math.abs(distanceY)) {
-                        if ((firstX_point < finalX)) {
-                            if (snake.cuerpo.isEmpty()) {
-                                setOirentetion(1);
-                            } else if (snake.getOrienteton() != 3)
-                                setOirentetion(1);
-                        } else {
-                            if (snake.cuerpo.isEmpty()) {
-                                setOirentetion(3);
-                            } else if (snake.getOrienteton() != 1)
-                                setOirentetion(3);
-                        }
-                    } else {
-                        if ((firstY_point < finalY)) {
-                            if (snake.cuerpo.isEmpty()) {
-                                setOirentetion(2);
-                            } else if (snake.getOrienteton() != 0)
-                                setOirentetion(2);
-                        } else {
-                            if (snake.cuerpo.isEmpty()) {
-                                setOirentetion(0);
-                            } else if (snake.getOrienteton() != 2)
-                                setOirentetion(0);
-                        }
-                    }
-                }
-
                 break;
         }
         return true;

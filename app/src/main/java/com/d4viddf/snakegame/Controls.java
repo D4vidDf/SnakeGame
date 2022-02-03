@@ -15,6 +15,7 @@ public class Controls extends AppCompatActivity {
         setContentView(R.layout.activity_controls);
         play = findViewById(R.id.play);
         play.setOnClickListener(v -> {
+            new Utils().vibrateButtonApple(getApplicationContext());
             Intent intent = new Intent(Controls.this, MainActivity.class);
             startActivity(intent);
             finish();

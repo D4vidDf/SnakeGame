@@ -8,47 +8,48 @@
     tools:context=".Controls">
 
     <ImageView
-        android:layout_centerHorizontal="true"
         android:id="@+id/logo"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginBottom="30dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_above="@id/title"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="60dp"
         android:src="@drawable/swipe" />
 
     <TextView
         android:id="@+id/title"
-        android:layout_centerInParent="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
         android:text="@string/control"
         android:textAlignment="center"
         android:textColor="#ffffff"
-        android:textSize="40sp"
+        android:textSize="36sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:layout_marginTop="60dp"
         android:layout_below="@id/title"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
         android:text="@string/desc_control"
         android:textAlignment="center"
         android:textColor="#ffffff"
-        android:textSize="24sp"
+        android:textSize="20sp"
         android:textStyle="bold" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/play"
-        android:layout_width="300dp"
-        android:layout_height="60dp"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="60dp"
+        android:layout_marginBottom="50dp"
         android:text="@string/play_game"
         android:textSize="16sp"
         android:textStyle="bold"

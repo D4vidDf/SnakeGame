@@ -36,7 +36,7 @@ public class BodyPart {
 
         }
         try {
-            ((Snake) ob).setColor(this.getColor());
+            this.setColor(((Snake) ob).getColor());
             setPosition(((Snake) ob).getPosition());
         } catch (Exception ignored) {
 

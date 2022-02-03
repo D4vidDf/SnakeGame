@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="control">M O V E M E N T O</string>
+    <string name="play_game">XOGAR</string>
+    <string name="logout">PECHAR SESIÖN</string>
+    <string name="login">ACCEDER</string>
+    <string name="point">"Puntaxe: "</string>
+    <string name="resume_desc">Prema para retomar o xogo</string>
+    <string name="resume">PAUSA</string>
+    <string name="new_game">Prema para comezar un novo xogo</string>
+    <string name="strat">Prema para comezar</string>
+    <string name="desc_control">Pasa o dedo para cambiar a orientación</string>
+    <string name="seleccionar_edad">Selecionar idade:</string>
+    <string name="aceptar">Aceptar</string>
+    <string name="maxpoint">"Puntaxe máis alta: "</string>
+</resources>
